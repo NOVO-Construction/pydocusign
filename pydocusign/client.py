@@ -266,9 +266,23 @@ class DocuSignClient(object):
             self.login_information()
         url = '{account}/envelopes'.format(account=self.account_url)
         data = envelope.to_dict()
-        document = envelope.documents[0].data
-        document.seek(0)
-        file_content = document.read()
+        docs_body = ""
+        for document in envelope.documents:
+            docs_body = (
+                docs_body +
+                "--AAA\r\n"
+                "Content-Type:application/pdf\r\n"
+                "Content-Disposition: file; "
+                "filename=\"{filename}\"; "
+                "documentId={documentId} \r\n"
+                "\r\n"
+                "{file_data}\r\n"
+                "\r\n".format(
+                    file_data=document.data.read(),
+                    filename=document.name,
+                    documentId=document.documentId,
+                )
+            )
         body = str(
             "\r\n"
             "\r\n"
@@ -277,15 +291,9 @@ class DocuSignClient(object):
             "Content-Disposition: form-data\r\n"
             "\r\n"
             "{json_data}\r\n"
-            "--myboundary\r\n"
-            "Content-Type:application/pdf\r\n"
-            "Content-Disposition: file; "
-            "filename=\"document.pdf\"; "
-            "documentid=1 \r\n"
-            "\r\n"
-            "{file_data}\r\n"
+            "{docs_body}"
             "--myboundary--\r\n"
-            "\r\n".format(json_data=json.dumps(data), file_data=file_content))
+            "\r\n".format(json_data=json.dumps(data), docs_body=docs_body))
         headers = self.base_headers()
         headers['Content-Type'] = "multipart/form-data; boundary=myboundary"
         headers['Content-Length'] = len(body)
