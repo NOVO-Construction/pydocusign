@@ -143,7 +143,7 @@ class DateTab(PositionnedTab):
     def to_dict(self):
         """Return dict representation of model.
 
-        >>> tab = SignHereTab(
+        >>> tab = DateTab(
         ...     documentId=2,
         ...     pageNumber=1,
         ...     xPosition=100,
@@ -157,7 +157,7 @@ class DateTab(PositionnedTab):
         True
 
         """
-        return super(SignHereTab, self).to_dict()
+        return super(DateTab, self).to_dict()
 
 
 class ApproveTab(PositionnedTab):
