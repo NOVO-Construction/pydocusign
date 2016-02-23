@@ -136,6 +136,30 @@ class SignHereTab(PositionnedTab):
         return super(SignHereTab, self).to_dict()
 
 
+class DateTab(PositionnedTab):
+    """Tag to have a recipient place his signature in the document."""
+    tabs_name = 'dateTabs'
+
+    def to_dict(self):
+        """Return dict representation of model.
+
+        >>> tab = SignHereTab(
+        ...     documentId=2,
+        ...     pageNumber=1,
+        ...     xPosition=100,
+        ...     yPosition=200)
+        >>> tab.to_dict() == {
+        ...     'documentId': 2,
+        ...     'pageNumber': 1,
+        ...     'xPosition': 100,
+        ...     'yPosition': 200,
+        ... }
+        True
+
+        """
+        return super(SignHereTab, self).to_dict()
+
+
 class ApproveTab(PositionnedTab):
     """Tag to have a recipient approve the document."""
     tabs_name = 'approveTabs'
