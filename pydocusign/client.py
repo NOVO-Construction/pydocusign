@@ -196,6 +196,10 @@ class DocuSignClient(object):
         """Shortcut to perform POST operations on DocuSign API."""
         return self._request(method='POST', *args, **kwargs)
 
+    def put(self, *args, **kwargs):
+        """Shortcut to perform PUT operations on DocuSign API."""
+        return self._request(method='PUT', *args, **kwargs)
+
     def delete(self, *args, **kwargs):
         """Shortcut to perform DELETE operations on DocuSign API."""
         return self._request(method='DELETE', *args, **kwargs)
@@ -248,6 +252,36 @@ class DocuSignClient(object):
         url = '/accounts/{accountId}'.format(accountId=accountId)
         data = self.delete(url)
         return data.strip() == ''
+
+    def get_envelope(self, envelope_id):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        return self.get(url)
+
+    def get_envelope_custom_fields(self, envelope_id):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/custom_fields/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        return self.get(url)
+
+    def post_envelope_custom_fields(self, envelope_id, text_custom_fields=None):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/custom_fields/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        data = {
+            'textCustomFields': text_custom_fields
+        }
+        return self.post(url, data=data, expected_status_code=201)
+
+    def put_envelope_custom_fields(self, envelope_id, text_custom_fields=None):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/custom_fields/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        data = {
+            'textCustomFields': text_custom_fields
+        }
+        return self.put(url, data=data, expected_status_code=201)
 
     def _create_envelope_from_document_request(self, envelope):
         """Return parts of the POST request for /envelopes.
