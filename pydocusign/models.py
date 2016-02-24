@@ -669,7 +669,8 @@ class Envelope(DocuSignObject):
     def __init__(self, documents=None, emailBlurb='', emailSubject='',
                  signers=None, carbonCopyRecipients=None, templateId=None, templateRoles=None,
                  status=ENVELOPE_STATUS_SENT, envelopeId=None,
-                 eventNotification=None, emailSettings=None, customFields=None):
+                 eventNotification=None, emailSettings=None, customFields=None, sobo_email=None):
+
         """Setup."""
         self.documents = documents or []
         self.emailBlurb = emailBlurb
@@ -685,6 +686,10 @@ class Envelope(DocuSignObject):
 
         #: ID in DocuSign database.
         self.envelopeId = envelopeId
+
+        #: Email address of user to send on behalf of.
+        #: If None, will use logged in user.
+        self.sobo_email = sobo_email
 
     def to_dict(self):
         """Return dict representation of model.
