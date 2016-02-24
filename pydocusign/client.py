@@ -1,6 +1,7 @@
 """DocuSign client."""
 from collections import namedtuple
 from io import BytesIO
+from urllib import urlencode
 import json
 import logging
 import os
@@ -259,29 +260,72 @@ class DocuSignClient(object):
         url = '/accounts/{accountId}/envelopes/{envelopeId}/'.format(accountId=self.account_id, envelopeId=envelope_id)
         return self.get(url)
 
+    def get_envelope_notification(self, envelope_id):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/notification/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        return self.get(url)
+
     def get_envelope_custom_fields(self, envelope_id):
         if not self.account_url:
             self.login_information()
         url = '/accounts/{accountId}/envelopes/{envelopeId}/custom_fields/'.format(accountId=self.account_id, envelopeId=envelope_id)
         return self.get(url)
 
-    def post_envelope_custom_fields(self, envelope_id, text_custom_fields=None):
+    def post_envelope_custom_fields(self, envelope_id, text_custom_fields=None, list_custom_fields=None):
         if not self.account_url:
             self.login_information()
         url = '/accounts/{accountId}/envelopes/{envelopeId}/custom_fields/'.format(accountId=self.account_id, envelopeId=envelope_id)
         data = {
-            'textCustomFields': text_custom_fields
+            'textCustomFields': text_custom_fields,
+            'listCustomFields': list_custom_fields,
         }
         return self.post(url, data=data, expected_status_code=201)
 
-    def put_envelope_custom_fields(self, envelope_id, text_custom_fields=None):
+    def put_envelope_custom_fields(self, envelope_id, text_custom_fields=None, list_custom_fields=None):
         if not self.account_url:
             self.login_information()
         url = '/accounts/{accountId}/envelopes/{envelopeId}/custom_fields/'.format(accountId=self.account_id, envelopeId=envelope_id)
         data = {
-            'textCustomFields': text_custom_fields
+            'textCustomFields': text_custom_fields,
+            'listCustomFields': list_custom_fields,
         }
         return self.put(url, data=data, expected_status_code=201)
+
+    def void_envelope(self, envelope_id, voidedReason=None):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        data = {
+            'status': 'voided',
+            'voidedReason': voidedReason,
+        }
+        return self.put(url, data=data)
+
+    def delete_envelope(self, envelope_ids):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/folders/recyclebin/'.format(accountId=self.account_id)
+        if not isinstance(envelope_ids, (list, tuple)):
+            envelope_ids = [envelope_ids]
+        data = {
+            'envelopeIds': envelope_ids,
+        }
+        return self.put(url, data=data)
+
+    def search_envelopes(self, custom_field=None, custom_field_value=None, status=None, from_date='1/1/1900'):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/'.format(accountId=self.account_id)
+        params = {
+            'from_date': from_date,
+        }
+        if custom_field and custom_field_value:
+            params['custom_field'] = '{}={}'.format(custom_field, custom_field_value)
+        if status:
+            params['status'] = status
+        return self.get('{}?{}'.format(url, urlencode(params)))
+
 
     def _create_envelope_from_document_request(self, envelope):
         """Return parts of the POST request for /envelopes.

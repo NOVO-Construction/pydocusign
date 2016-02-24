@@ -8,7 +8,6 @@ See https://www.docusign.com/developer-center/explore/common-terms
 
 """
 
-
 ENVELOPE_STATUS_CREATED = 'Created'
 ENVELOPE_STATUS_DRAFT = 'Draft'
 ENVELOPE_STATUS_SENT = 'Sent'
@@ -25,7 +24,6 @@ ENVELOPE_STATUS_LIST = [
     ENVELOPE_STATUS_VOIDED,
 ]
 
-
 #: Default list of envelope events on which register for notifications.
 #:
 #: By default: every envelope event.
@@ -33,8 +31,7 @@ DEFAULT_ENVELOPE_EVENTS = [
     {'envelopeEventStatusCode': event, 'includeDocuments': False}
     for event in ENVELOPE_STATUS_LIST
     if event not in [ENVELOPE_STATUS_CREATED, ENVELOPE_STATUS_DRAFT]
-]
-
+    ]
 
 RECIPIENT_STATUS_AUTHENTICATION_FAILED = 'AuthenticationFailed'
 RECIPIENT_STATUS_AUTO_RESPONDED = 'AutoResponded'
@@ -53,7 +50,6 @@ RECIPIENT_STATUS_LIST = [
     RECIPIENT_STATUS_SENT,
 ]
 
-
 #: Default list of recipient events on which register for notifications.
 #:
 #: By default: every recipient event.
@@ -61,7 +57,7 @@ DEFAULT_RECIPIENT_EVENTS = [
     {'recipientEventStatusCode': event, 'includeDocuments': False}
     for event in RECIPIENT_STATUS_LIST
     if event is not RECIPIENT_STATUS_SIGNED  # Except some events.
-]
+    ]
 
 
 class DocuSignObject(object):
@@ -137,7 +133,7 @@ class SignHereTab(PositionnedTab):
 
 
 class DateTab(PositionnedTab):
-    """Tag to have a recipient place his signature in the document."""
+    """Tag to have a recipient place a date in the document."""
     tabs_name = 'dateTabs'
 
     def to_dict(self):
@@ -158,6 +154,30 @@ class DateTab(PositionnedTab):
 
         """
         return super(DateTab, self).to_dict()
+
+
+class DateSignedTab(PositionnedTab):
+    """Tag where you want the date the recipient signed the document to automatically appear."""
+    tabs_name = 'dateSignedTabs'
+
+    def to_dict(self):
+        """Return dict representation of model.
+
+        >>> tab = DateSignedTab(
+        ...     documentId=2,
+        ...     pageNumber=1,
+        ...     xPosition=100,
+        ...     yPosition=200)
+        >>> tab.to_dict() == {
+        ...     'documentId': 2,
+        ...     'pageNumber': 1,
+        ...     'xPosition': 100,
+        ...     'yPosition': 200,
+        ... }
+        True
+
+        """
+        return super(DateSignedTab, self).to_dict()
 
 
 class ApproveTab(PositionnedTab):
@@ -213,12 +233,12 @@ class Signer(Recipient):
     """
     attributes = ['clientUserId', 'email', 'emailBody', 'emailSubject', 'name',
                   'recipientId', 'routingOrder', 'supportedLanguage', 'tabs',
-                  'accessCode']
+                  'accessCode', 'note']
 
     def __init__(self, clientUserId=None, email='', emailBody=None,
                  emailSubject=None, name='', recipientId=None, routingOrder=0,
                  supportedLanguage=None, tabs=None, userId=None,
-                 accessCode=None):
+                 accessCode=None, note=''):
         """Setup."""
         #: If ``None`` then the recipient is remote (email sent) else embedded.
         self.clientUserId = clientUserId
@@ -258,6 +278,7 @@ class Signer(Recipient):
 
         #: Access code required for signer before signing the document
         self.accessCode = accessCode
+        self.note = note
 
     def to_dict(self):
         """Return dict representation of model.
@@ -330,6 +351,7 @@ class Signer(Recipient):
             'routingOrder': self.routingOrder,
             'tabs': {},
             'accessCode': self.accessCode,
+            'note': self.note,
         }
         if self.emailBody or self.emailSubject or self.supportedLanguage:
             data['emailNotification'] = {
@@ -340,6 +362,46 @@ class Signer(Recipient):
         for tab in self.tabs:
             data['tabs'].setdefault(tab.tabs_name, [])
             data['tabs'][tab.tabs_name].append(tab.to_dict())
+        return data
+
+
+class CarbonCopyRecipient(Recipient):
+    attributes = ['clientUserId', 'email', 'emailBody', 'emailSubject', 'name',
+                  'recipientId', 'routingOrder', 'supportedLanguage', 'tabs',
+                  'accessCode', 'note']
+
+    def __init__(self, clientUserId=None, email='', emailBody=None,
+                 emailSubject=None, name='', recipientId=None, routingOrder=0,
+                 supportedLanguage=None, userId=None,
+                 accessCode=None, note=''):
+        self.clientUserId = clientUserId
+        self.email = email
+        self.emailBody = emailBody
+        self.emailSubject = emailSubject
+        self.supportedLanguage = supportedLanguage
+        self.name = name
+        self.recipientId = recipientId
+        self.routingOrder = routingOrder
+        self.userId = userId
+        self.accessCode = accessCode
+        self.note = note
+
+    def to_dict(self):
+        data = {
+            'email': self.email,
+            'emailNotification': None,
+            'name': self.name,
+            'recipientId': self.recipientId,
+            'routingOrder': self.routingOrder,
+            'accessCode': self.accessCode,
+            'note': self.note,
+        }
+        if self.emailBody or self.emailSubject or self.supportedLanguage:
+            data['emailNotification'] = {
+                'emailBody': self.emailBody,
+                'emailSubject': self.emailSubject,
+                'supportedLanguage': self.supportedLanguage,
+            }
         return data
 
 
@@ -605,18 +667,21 @@ class Envelope(DocuSignObject):
     DEFAULT_EVENTS = DEFAULT_ENVELOPE_EVENTS
 
     def __init__(self, documents=None, emailBlurb='', emailSubject='',
-                 recipients=None, templateId=None, templateRoles=None,
+                 signers=None, carbonCopyRecipients=None, templateId=None, templateRoles=None,
                  status=ENVELOPE_STATUS_SENT, envelopeId=None,
-                 eventNotification=None):
+                 eventNotification=None, emailSettings=None, customFields=None):
         """Setup."""
         self.documents = documents or []
         self.emailBlurb = emailBlurb
         self.emailSubject = emailSubject
         self.eventNotification = eventNotification
-        self.recipients = recipients or {}
+        self.signers = signers or {}
+        self.carbonCopyRecipients = carbonCopyRecipients or {}
         self.templateId = templateId
         self.templateRoles = templateRoles
         self.status = status
+        self.emailSettings = emailSettings
+        self.customFields = customFields
 
         #: ID in DocuSign database.
         self.envelopeId = envelopeId
@@ -687,6 +752,8 @@ class Envelope(DocuSignObject):
             'status': self.status,
             'emailBlurb': self.emailBlurb,
             'emailSubject': self.emailSubject,
+            'customFields': self.customFields,
+            'emailSettings': self.emailSettings,
         }
         if self.eventNotification:
             data['eventNotification'] = self.eventNotification.to_dict()
@@ -703,11 +770,15 @@ class Envelope(DocuSignObject):
                 'documents': [doc.to_dict() for doc in self.documents],
                 'recipients': {
                     'signers': [],
+                    'carbonCopies': [],
                 },
             })
-            for recipient in self.recipients:
-                if isinstance(recipient, Signer):
-                    data['recipients']['signers'].append(recipient.to_dict())
+            for signer in self.signers:
+                if isinstance(signer, Signer):
+                    data['recipients']['signers'].append(signer.to_dict())
+            for carbonCopyRecipient in self.carbonCopyRecipients:
+                if isinstance(carbonCopyRecipient, CarbonCopyRecipient):
+                    data['recipients']['carbonCopies'].append(carbonCopyRecipient.to_dict())
         return data
 
     def get_recipients(self, client=None):
@@ -742,7 +813,7 @@ class Envelope(DocuSignObject):
                 for index, initial_recipient in enumerate(initial_recipients):
                     if initial_recipient.clientUserId == client_user_id:
                         recipient = initial_recipient
-                        del(initial_recipients[index])
+                        del (initial_recipients[index])
                         break
             recipient.routingOrder = int(recipient_data.get('routingOrder', 1))
             recipient.name = recipient_data.get('name', '')
@@ -792,3 +863,27 @@ class Envelope(DocuSignObject):
     def get_certificate(self, client=None):
         """Use ``client`` to download special document: certificate."""
         return self.get_document(documentId='certificate', client=client)
+
+    def get_custom_fields(self, client=None):
+        """Use ``client`` to get custom fields."""
+        if client is None:
+            client = self.client
+        return client.get_envelope_custom_fields(self.envelopeId)
+
+    def post_custom_fields(self, text_custom_fields=None, list_custom_fields=None, client=None):
+        """Use ``client`` to post custom fields."""
+        if client is None:
+            client = self.client
+        return client.post_envelope_custom_fields(self.envelopeId, text_custom_fields=text_custom_fields, list_custom_fields=list_custom_fields)
+
+    def void(self, voidedReason=None, client=None):
+        """Use ``client`` to void envelope."""
+        if client is None:
+            client = self.client
+        return client.void_envelope(self.envelopeId, voidedReason=voidedReason)
+
+    def delete(self, client=None):
+        """Use ``client`` to delete envelope."""
+        if client is None:
+            client = self.client
+        return client.delete_envelope(self.envelopeId)
