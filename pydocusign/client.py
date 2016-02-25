@@ -390,7 +390,6 @@ class DocuSignClient(object):
             params['status'] = status
         return self.get('{}?{}'.format(url, urlencode(params)))
 
-
     def _create_envelope_from_document_request(self, envelope):
         """Return parts of the POST request for /envelopes.
 
