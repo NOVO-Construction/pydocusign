@@ -593,6 +593,20 @@ class DocuSignClient(object):
         setattr(response.raw, 'close', response.close)
         return response.raw
 
+    def download_envelope_documents(self, envelope_id, watermark=True, certificate=True):
+        if not self.account_url:
+            self.login_information()
+        params = {
+            'watermark': watermark,
+            'certificate': certificate,
+        }
+        url = '{root}/accounts/{accountId}/envelopes/{envelopeId}/documents/combined/'.format(root=self.root_url, accountId=self.account_id, envelopeId=envelope_id)
+        url = '{}?{}'.format(url, urlencode(params))
+        headers = self.base_headers()
+        response = requests.get(url, headers=headers, stream=True)
+        setattr(response.raw, 'close', response.close)
+        return response.raw
+
     def get_template(self, templateId):
         """GET the definition of the template."""
         if not self.account_url:
