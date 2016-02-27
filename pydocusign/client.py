@@ -615,3 +615,17 @@ class DocuSignClient(object):
               .format(accountId=self.account_id,
                       templateId=templateId)
         return self.get(url)
+
+    def get_audit_events(self, envelopeId):
+        """GET the list of envelope audit events."""
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/audit_events'.format(accountId=self.account_id, envelopeId=envelopeId)
+        data = self.get(url)
+        events = []
+        for audit_event in data.get('auditEvents'):
+            event = {}
+            for event_field in audit_event.get('eventFields'):
+                event[event_field.get('name')] = event_field.get('value')
+            events.append(event)
+        return events
