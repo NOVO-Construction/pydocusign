@@ -568,6 +568,14 @@ class DocuSignClient(object):
         }
         return self.post(url, data=data, expected_status_code=201)
 
+    def put_envelope_recipients(self, envelope_id, data, params={}):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/recipients/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        url = '{}?{}'.format(url, urlencode(params))
+        print url
+        return self.put(url, data=data)
+
     def get_envelope_document_list(self, envelopeId):
         """GET the list of envelope's documents."""
         if not self.account_url:
