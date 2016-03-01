@@ -525,3 +525,10 @@ class DocuSignCallbackParser(object):
         recipients = OrderedDict([(rec['ClientUserId'], rec)
                                   for rec in recipients])
         return recipients
+
+    @property
+    def custom_fields(self):
+        custom_fields = {}
+        for field in self.xml_soup.findAll('CustomField'):
+            custom_fields[field.Name.text] = field.Value.text
+        return custom_fields
