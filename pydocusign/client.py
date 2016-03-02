@@ -366,6 +366,15 @@ class DocuSignClient(object):
         }
         return self.put(url, data=data)
 
+    def send_envelope(self, envelope_id):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        data = {
+            'status': 'sent',
+        }
+        return self.put(url, data=data)
+
     def delete_envelope(self, envelope_ids):
         if not self.account_url:
             self.login_information()
