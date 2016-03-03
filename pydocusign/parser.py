@@ -23,6 +23,7 @@ class DocuSignCallbackParser(object):
         Raise ``ValueError`` if status is not valid.
 
         """
+        self.xml_soup.EnvelopeStatus.RecipientStatuses.extract()
         status = self.xml_soup.EnvelopeStatus.Status.string
         if status is None:
             raise ValueError('Could not read envelope status from XML.')
