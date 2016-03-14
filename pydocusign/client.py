@@ -176,7 +176,7 @@ class DocuSignClient(object):
 
         return headers
 
-    def _request(self, url, method='GET', headers=None, data=None,
+    def _request(self, url, method='GET', headers=None, data=None, file_data=None,
                  expected_status_code=200, sobo_email=None):
         """Shortcut to perform HTTP requests."""
         do_url = '{root}{path}'.format(root=self.root_url, path=url)
@@ -189,6 +189,8 @@ class DocuSignClient(object):
             do_data = json.dumps(data)
         else:
             do_data = None
+        if file_data:
+            do_data = file_data
         try:
             response = do_request(do_url, headers=do_headers, data=do_data,
                                   timeout=self.timeout)
@@ -356,6 +358,7 @@ class DocuSignClient(object):
         }
         return self.put(url, data=data, expected_status_code=201)
 
+
     def void_envelope(self, envelope_id, voidedReason=None):
         if not self.account_url:
             self.login_information()
@@ -385,6 +388,16 @@ class DocuSignClient(object):
             'envelopeIds': envelope_ids,
         }
         return self.put(url, data=data)
+
+    def upload_document_to_envelope(self, envelope_id, document_id=1, content_type='application/pdf', filename='', file_data=None):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/documents/{documentId}'.format(documentId=document_id, accountId=self.account_id, envelopeId=envelope_id)
+        headers = {
+            'Content-Disposition': 'filename="{}"'.format(filename),
+            'Content-Type': content_type,
+        }
+        return self.put(url, headers=headers, file_data=file_data)
 
     def search_envelopes(self, custom_field=None, custom_field_value=None, status=None, from_date='1/1/1900'):
         if not self.account_url:
