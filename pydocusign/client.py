@@ -8,6 +8,8 @@ import os
 
 import certifi
 import pycurl
+
+import collections
 import requests
 
 from pydocusign import exceptions
@@ -389,16 +391,6 @@ class DocuSignClient(object):
         }
         return self.put(url, data=data)
 
-    def upload_document_to_envelope(self, envelope_id, document_id=1, content_type='application/pdf', filename='', file_data=None):
-        if not self.account_url:
-            self.login_information()
-        url = '/accounts/{accountId}/envelopes/{envelopeId}/documents/{documentId}'.format(documentId=document_id, accountId=self.account_id, envelopeId=envelope_id)
-        headers = {
-            'Content-Disposition': 'filename="{}"'.format(filename),
-            'Content-Type': content_type,
-        }
-        return self.put(url, headers=headers, file_data=file_data)
-
     def search_envelopes(self, custom_field=None, custom_field_value=None, status=None, from_date='1/1/1900'):
         if not self.account_url:
             self.login_information()
@@ -636,6 +628,32 @@ class DocuSignClient(object):
         response = requests.get(url, headers=headers, stream=True)
         setattr(response.raw, 'close', response.close)
         return response.raw
+
+    def upload_document_to_envelope(self, envelope_id, document_id=1, content_type='application/pdf', filename='', file_data=None):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/documents/{documentId}'.format(accountId=self.account_id, envelopeId=envelope_id, documentId=document_id)
+        headers = {
+            'Content-Disposition': 'filename="{}"'.format(filename),
+            'Content-Type': content_type,
+        }
+        return self.put(url, headers=headers, file_data=file_data)
+
+    def delete_envelope_documents(self, envelope_id, document_ids):
+        if not self.account_url:
+            self.login_information()
+        url = '/accounts/{accountId}/envelopes/{envelopeId}/documents/'.format(accountId=self.account_id, envelopeId=envelope_id)
+        if not isinstance(document_ids, collections.Iterable):
+            document_ids = [document_ids]
+        document_list = []
+        for document_id in document_ids:
+            document_list.append(
+                {'documentId': document_id}
+            )
+        data = {}
+        if document_list:
+            data = {'documents': document_list}
+        return self.delete(url, data=data)
 
     def get_template(self, templateId):
         """GET the definition of the template."""
