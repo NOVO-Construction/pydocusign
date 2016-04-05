@@ -380,12 +380,10 @@ class DocuSignClient(object):
         }
         return self.put(url, data=data)
 
-    def delete_envelope(self, envelope_ids):
+    def delete_envelope(self, *envelope_ids):
         if not self.account_url:
             self.login_information()
         url = '/accounts/{accountId}/folders/recyclebin/'.format(accountId=self.account_id)
-        if not isinstance(envelope_ids, (list, tuple)):
-            envelope_ids = [envelope_ids]
         data = {
             'envelopeIds': envelope_ids,
         }
@@ -587,7 +585,6 @@ class DocuSignClient(object):
             self.login_information()
         url = '/accounts/{accountId}/envelopes/{envelopeId}/recipients/'.format(accountId=self.account_id, envelopeId=envelope_id)
         url = '{}?{}'.format(url, urlencode(params))
-        print url
         return self.put(url, data=data)
 
     def get_envelope_document_list(self, envelopeId):
