@@ -179,7 +179,7 @@ class DocuSignClient(object):
         return headers
 
     def _request(self, url, method='GET', headers=None, data=None, file_data=None,
-                 expected_status_code=200, sobo_email=None):
+                 expected_status_code=200, sobo_email=None, check_status_code=True):
         """Shortcut to perform HTTP requests."""
         do_url = '{root}{path}'.format(root=self.root_url, path=url)
         do_request = getattr(requests, method.lower())
@@ -203,7 +203,7 @@ class DocuSignClient(object):
                   .format(method=method, url=do_url, exception=exception)
             logger.error(msg)
             raise exceptions.DocuSignException(msg)
-        if response.status_code != expected_status_code:
+        if check_status_code and response.status_code != expected_status_code:
             msg = "DocuSign request failed: " \
                   "{method} {url} returned code {status} " \
                   "while expecting code {expected}; " \
