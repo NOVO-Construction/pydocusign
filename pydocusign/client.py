@@ -404,24 +404,35 @@ class DocuSignClient(object):
 
     def _create_envelope_from_document_request(self, envelope):
         """Return parts of the POST request for /envelopes.
-
         This is encapsultated in a method for test purposes: we do not want to
         post a real request on DocuSign API for each test, whereas we want to
         check that the HTTP request's parts meet the DocuSign specification.
-
         .. warning::
-
            Only one document is supported at the moment. This is a limitation
            of `pydocusign`, not of `DocuSign`.
-
         """
         if not self.account_url:
             self.login_information()
         url = '{account}/envelopes'.format(account=self.account_url)
         data = envelope.to_dict()
-        document = envelope.documents[0].data
-        document.seek(0)
-        file_content = document.read()
+        docs_body = ""
+        for document in envelope.documents:
+            document.data.seek(0)
+            docs_body = (
+                docs_body +
+                "--myboundary\r\n"
+                "Content-Type:application/pdf\r\n"
+                "Content-Disposition: file; "
+                "filename=\"{filename}\"; "
+                "documentId={documentId} \r\n"
+                "\r\n"
+                "{file_data}\r\n"
+                "\r\n".format(
+                    file_data=document.data.read(),
+                    filename=document.name,
+                    documentId=document.documentId,
+                )
+            )
         body = str(
             "\r\n"
             "\r\n"
@@ -431,15 +442,10 @@ class DocuSignClient(object):
             "\r\n"
             "{json_data}\r\n"
             "--myboundary\r\n"
-            "Content-Type:application/pdf\r\n"
-            "Content-Disposition: file; "
-            "filename=\"document.pdf\"; "
-            "documentid=1 \r\n"
-            "\r\n"
-            "{file_data}\r\n"
+            "{docs_body}"
             "--myboundary--\r\n"
-            "\r\n".format(json_data=json.dumps(data), file_data=file_content))
-        headers = self.base_headers(envelope.sobo_email)
+            "\r\n".format(json_data=json.dumps(data), docs_body=docs_body))
+        headers = self.base_headers()
         headers['Content-Type'] = "multipart/form-data; boundary=myboundary"
         headers['Content-Length'] = len(body)
         return {
