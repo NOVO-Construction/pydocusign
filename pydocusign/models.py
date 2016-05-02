@@ -405,6 +405,10 @@ class CarbonCopyRecipient(Recipient):
         return data
 
 
+class CertifiedDeliveryRecipient(CarbonCopyRecipient):
+    pass
+
+
 class Role(Recipient):
     """A recipient who must sign, initial, date or add data to form fields on
     the documents in the envelope template.
@@ -667,7 +671,7 @@ class Envelope(DocuSignObject):
     DEFAULT_EVENTS = DEFAULT_ENVELOPE_EVENTS
 
     def __init__(self, documents=None, emailBlurb='', emailSubject='',
-                 signers=None, carbonCopyRecipients=None, templateId=None, templateRoles=None,
+                 signers=None, carbonCopyRecipients=None, certifiedDeliveries=None, templateId=None, templateRoles=None,
                  status=ENVELOPE_STATUS_SENT, envelopeId=None,
                  eventNotification=None, emailSettings=None, customFields=None, sobo_email=None):
 
@@ -678,6 +682,7 @@ class Envelope(DocuSignObject):
         self.eventNotification = eventNotification
         self.signers = signers or {}
         self.carbonCopyRecipients = carbonCopyRecipients or {}
+        self.certifiedDeliveries = certifiedDeliveries or {}
         self.templateId = templateId
         self.templateRoles = templateRoles
         self.status = status
@@ -776,6 +781,7 @@ class Envelope(DocuSignObject):
                 'recipients': {
                     'signers': [],
                     'carbonCopies': [],
+                    'certifiedDeliveries': [],
                 },
             })
             for signer in self.signers:
@@ -784,6 +790,9 @@ class Envelope(DocuSignObject):
             for carbonCopyRecipient in self.carbonCopyRecipients:
                 if isinstance(carbonCopyRecipient, CarbonCopyRecipient):
                     data['recipients']['carbonCopies'].append(carbonCopyRecipient.to_dict())
+            for certifiedDelivery in self.certifiedDeliveries:
+                if isinstance(certifiedDelivery, CertifiedDeliveryRecipient):
+                    data['recipients']['certifiedDeliveries'].append(certifiedDelivery.to_dict())
         return data
 
     def get_recipients(self, client=None):

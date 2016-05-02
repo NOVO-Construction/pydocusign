@@ -29,6 +29,7 @@ from pydocusign.models import EventNotification  # NoQA
 from pydocusign.models import Recipient  # NoQA
 from pydocusign.models import Signer  # NoQA
 from pydocusign.models import CarbonCopyRecipient  # NoQA
+from pydocusign.models import CertifiedDeliveryRecipient  # NoQA
 from pydocusign.models import Role  # NoQA
 from pydocusign.models import SignHereTab  # NoQA
 from pydocusign.models import DateTab  # NoQA
