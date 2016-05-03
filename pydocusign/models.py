@@ -212,12 +212,33 @@ class DeclineTab(PositionnedTab):
         return super(DeclineTab, self).to_dict()
 
 
-class NoteTab(PositionnedTab):
-    """Tag to have a recipient add notes the document."""
-    tabs_name = 'noteTabs'
+class AdvancedTab(Tab):
+    """Advanced Tab base class."""
+    base_options = {
+        'documentId': None,
+        'pageNumber': 1,
+        'xPosition': 0,
+        'yPosition': None,
+    }
+    options = {}
+
+    def __init__(self, **kwargs):
+        self.attributes = {}
+        self.attributes.update(self.base_options)
+        self.attributes.update(self.options)
+        self.attributes.update(kwargs)
 
     def to_dict(self):
-        return super(NoteTab, self).to_dict()
+        return self.attributes
+
+
+class NoteTab(AdvancedTab):
+    """Tag to have a recipient add notes the document."""
+    tabs_name = 'noteTabs'
+    options = {
+        'height': 33,
+        'width': 66,
+    }
 
 
 class Recipient(DocuSignObject):
