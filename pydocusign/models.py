@@ -204,6 +204,14 @@ class ApproveTab(PositionnedTab):
         return super(ApproveTab, self).to_dict()
 
 
+class DeclineTab(PositionnedTab):
+    """Tag to have a recipient decline the document."""
+    tabs_name = 'declineTabs'
+
+    def to_dict(self):
+        return super(DeclineTab, self).to_dict()
+
+
 class Recipient(DocuSignObject):
     """Base class for "recipient" objects.
 
