@@ -212,6 +212,14 @@ class DeclineTab(PositionnedTab):
         return super(DeclineTab, self).to_dict()
 
 
+class NoteTab(PositionnedTab):
+    """Tag to have a recipient add notes the document."""
+    tabs_name = 'noteTabs'
+
+    def to_dict(self):
+        return super(NoteTab, self).to_dict()
+
+
 class Recipient(DocuSignObject):
     """Base class for "recipient" objects.
 
