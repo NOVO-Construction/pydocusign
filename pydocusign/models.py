@@ -245,9 +245,8 @@ class SignerAttachmentTab(AdvancedTab):
     """Tag to have a recipient add attachments the document."""
     tabs_name = 'signerAttachmentTabs'
     options = {
-        'tabLabel': '',
+        'required': False,
     }
-
 
 
 class Recipient(DocuSignObject):
