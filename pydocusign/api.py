@@ -37,5 +37,6 @@ from pydocusign.models import DateSignedTab  # NoQA
 from pydocusign.models import ApproveTab  # NoQA
 from pydocusign.models import DeclineTab  # NoQA
 from pydocusign.models import NoteTab  # NoQA
+from pydocusign.models import SignerAttachmentTab  # NoQA
 from pydocusign.models import Tab  # NoQA
 from pydocusign.parser import DocuSignCallbackParser  # NoQA

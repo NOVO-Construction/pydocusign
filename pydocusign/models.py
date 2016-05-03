@@ -241,6 +241,15 @@ class NoteTab(AdvancedTab):
     }
 
 
+class SignerAttachmentTab(AdvancedTab):
+    """Tag to have a recipient add attachments the document."""
+    tabs_name = 'signerAttachmentTabs'
+    options = {
+        'tabLabel': '',
+    }
+
+
+
 class Recipient(DocuSignObject):
     """Base class for "recipient" objects.
 
